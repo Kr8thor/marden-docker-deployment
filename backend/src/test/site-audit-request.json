@@ -1,0 +1,8 @@
+{
+  "url": "https://example.com",
+  "options": {
+    "maxPages": 10,
+    "depth": 2,
+    "includeDetails": true
+  }
+}

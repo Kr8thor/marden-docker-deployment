@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "./build.sh",
+  "installCommand": "npm install --legacy-peer-deps",
+  "functions": {
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "NPM_FLAGS": "--legacy-peer-deps"
+  }
+}

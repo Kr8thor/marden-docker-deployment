@@ -16,27 +16,13 @@ services:
   backend:
     build: ./backend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     restart: always
-    environment:
-      - NODE_ENV=production
-      # Import all environment variables from .env.prod
-      - REDIS_URL=${REDIS_URL}
-      - REDIS_TOKEN=${REDIS_TOKEN}
-      - PORT=3000
-      - QUEUE_NAME=marden_audit_queue
-      - PROCESSING_QUEUE_NAME=marden_audit_processing
-      - JOB_PREFIX=job:
-      - MAX_PAGES=20
-      - CRAWL_DEPTH=2
-      - TIMEOUT=30000
-      - USER_AGENT=MardenSEO Audit Bot v1.0
-      - ALLOWED_ORIGINS=http://localhost:80,https://audit.mardenseo.com
-      - LOG_LEVEL=info
+    env_file:
+      - ./.env
     volumes:
       - ./backend/src:/app/src
 
-  # Add Redis service to replace Upstash Redis
   redis:
     image: redis:alpine
     ports:

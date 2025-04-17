@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MardenSEO Audit Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .issues {
+            margin-top: 20px;
+        }
+        .issue {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .warning {
+            background-color: #ffe082;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MardenSEO Audit Tool</h1>
+        <div class="form-group">
+            <label for="url">Enter Website URL</label>
+            <input type="text" id="url" placeholder="https://example.com" value="https://example.com">
+        </div>
+        <button id="runAudit">Run Audit</button>
+        <div id="results">
+            <h2>Audit Results</h2>
+            <div class="score">Score: <span id="scoreValue">0</span>/100</div>
+            <div class="issues" id="issuesList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('runAudit').addEventListener('click', async function() {
+            const url = document.getElementById('url').value;
+            if (!url) return alert('Please enter a URL');
+            
+            try {
+                const response = await fetch('/api/audit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('scoreValue').textContent = data.results.score;
+                    
+                    const issuesList = document.getElementById('issuesList');
+                    issuesList.innerHTML = '';
+                    
+                    data.results.issues.forEach(issue => {
+                        const issueEl = document.createElement('div');
+                        issueEl.className = `issue ${issue.severity}`;
+                        issueEl.textContent = issue.message;
+                        issuesList.appendChild(issueEl);
+                    });
+                    
+                    document.getElementById('results').style.display = 'block';
+                } else {
+                    alert('Audit failed: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while running the audit. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
