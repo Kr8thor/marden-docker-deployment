@@ -1,0 +1,32 @@
+# Environment variables
+.env
+
+# Node.js dependencies
+node_modules/
+
+# Build directories
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Docker volumes
+redis-data/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.swp
+*.swo

@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production
+      # Add other environment variables from .env.prod here
+    volumes:
+      - ./src:/app/src
