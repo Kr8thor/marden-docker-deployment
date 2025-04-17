@@ -1,5 +1,8 @@
 FROM nginx:alpine
 
+# Create SSL directory
+RUN mkdir -p /etc/nginx/ssl
+
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
@@ -7,8 +10,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN mkdir -p /usr/share/nginx/html
 COPY ./test-frontend.html /usr/share/nginx/html/index.html
 
-# Expose port 80
-EXPOSE 80
+# Expose ports
+EXPOSE 80 443
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

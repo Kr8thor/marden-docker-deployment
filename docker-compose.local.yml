@@ -5,12 +5,9 @@ services:
     build: ./frontend
     ports:
       - "80:80"
-      - "443:443"
     restart: always
     volumes:
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt/live/audit.mardenseo.com/fullchain.pem:/etc/nginx/ssl/cert.pem
-      - /etc/letsencrypt/live/audit.mardenseo.com/privkey.pem:/etc/nginx/ssl/key.pem
     environment:
       - NODE_ENV=production
     depends_on:

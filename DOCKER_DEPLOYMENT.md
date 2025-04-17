@@ -1,151 +1,264 @@
 # MardenSEO Audit Tool Docker Deployment Guide
 
-This guide provides instructions for deploying the complete MardenSEO Audit Tool using Docker, replacing the previous Vercel deployment.
+This guide provides comprehensive instructions for deploying the MardenSEO Audit Tool using Docker, replacing the previous Vercel-based deployment.
 
-## Overview
+## Architecture Overview
 
-The MardenSEO Audit Tool now consists of three Docker services:
-1. Frontend: Nginx serving the React application
-2. Backend: Node.js API server
-3. Redis: For data storage and job queuing (replacing Upstash Redis)
+The MardenSEO Audit Tool consists of three main components:
 
-## Prerequisites
+1. **Frontend**: Nginx serving a static website built with React
+2. **Backend**: Node.js API server handling SEO audit requests
+3. **Redis**: Data storage and job queuing (replacing Upstash Redis)
 
-- Docker and Docker Compose installed on your server
-- Domain name configured (audit.mardenseo.com)
-- Basic knowledge of Docker and Linux server administration
+## Deployment Options
 
-## Deployment Steps
+### Option 1: Automated Deployment Script
 
-### 1. Clone the Repository
+The easiest way to deploy is using the provided deployment script:
+
+1. SSH into your server as a user with sudo privileges:
+   ```bash
+   ssh marddium@209.74.67.40
+   ```
+
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/Kr8thor/marden-docker-deployment.git
+   cd marden-docker-deployment
+   ```
+
+3. Run the deployment script:
+   ```bash
+   chmod +x deploy.sh
+   sudo ./deploy.sh
+   ```
+
+The script will:
+- Install Docker and Docker Compose if needed
+- Install Certbot and obtain SSL certificates if they don't exist
+- Build and start the Docker containers
+- Set up automatic certificate renewal
+
+### Option 2: Manual Deployment
+
+For more control, you can deploy manually:
+
+#### 1. Server Preparation
 
 ```bash
-git clone https://github.com/your-username/marden-docker-deployment.git
+# Update system packages
+sudo apt-get update
+sudo apt-get upgrade -y
+
+# Install required packages
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+
+# Install Docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+#### 2. Set Up SSL Certificates
+
+```bash
+# Install Certbot
+sudo apt-get install -y certbot
+
+# Stop any existing web servers
+sudo systemctl stop nginx 2>/dev/null || true
+sudo systemctl stop apache2 2>/dev/null || true
+
+# Obtain SSL certificate
+sudo certbot certonly --standalone --preferred-challenges http -d audit.mardenseo.com
+```
+
+#### 3. Clone and Configure the Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/Kr8thor/marden-docker-deployment.git
 cd marden-docker-deployment
+
+# Configure environment variables
+cp .env.example .env
+nano .env
 ```
 
-### 2. Configure Environment Variables
+Update the `.env` file with appropriate values, particularly:
+- `ALLOWED_ORIGINS=https://audit.mardenseo.com`
 
-Create a `.env` file in the root directory:
+#### 4. Build and Start the Containers
 
 ```bash
-# Create .env file with required variables
-touch .env
+# Build the Docker images
+sudo docker-compose build
 
-# Add the following variables to your .env file:
-# REDIS_URL=redis://redis:6379
-# REDIS_TOKEN=your_token_if_needed
+# Start the containers
+sudo docker-compose up -d
 ```
 
-### 3. Update the nginx.conf (if needed)
-
-The `frontend/nginx.conf` file is already configured to serve the frontend and proxy API requests to the backend. However, you may need to update the server_name if you're using a different domain:
-
-```nginx
-server {
-    listen       80;
-    server_name  your-domain.com;  # Update this if needed
-    # ... rest of the config
-}
-```
-
-### 4. Run the Docker Compose Setup
+#### 5. Set Up Certificate Renewal
 
 ```bash
-docker-compose up -d
+# Edit crontab
+sudo crontab -e
 ```
 
-This will:
-- Build and start the frontend container (exposed on port 80)
-- Build and start the backend container (exposed on port 3000, but only accessible from Docker network)
-- Start a Redis container for data storage
-
-### 5. Verify the Deployment
-
-Once the containers are running, you should be able to access the application at your domain or server IP address.
-
-Check the container logs if you encounter any issues:
-
-```bash
-docker-compose logs frontend
-docker-compose logs backend
-docker-compose logs redis
+Add this line:
+```
+0 3 * * * certbot renew --quiet && docker-compose -f /path/to/marden-docker-deployment/docker-compose.yml restart frontend
 ```
 
-### 6. Set up SSL/TLS (HTTPS)
+## Domain and DNS Configuration
 
-For production use, you should set up HTTPS. You have several options:
+Ensure that DNS for audit.mardenseo.com points to your server:
 
-#### Option 1: Using a reverse proxy like Nginx or Traefik on the host
+1. Log in to your domain registrar (Namecheap)
+2. Navigate to the DNS settings for mardenseo.com
+3. Create or update an A record for audit.mardenseo.com pointing to your server IP (209.74.67.40)
 
-This is recommended for production environments.
+## Maintenance and Updates
 
-#### Option 2: Update the docker-compose.yml to include a Certbot container
-
-Add a Certbot service to automatically obtain and renew SSL certificates.
-
-### 7. Ongoing Maintenance
-
-#### Updating the application
+### Updating the Application
 
 To update the application:
 
 ```bash
+# Navigate to the deployment directory
+cd /path/to/marden-docker-deployment
+
 # Pull the latest code
 git pull
 
-# Rebuild and restart the containers
-docker-compose up -d --build
+# Rebuild and restart containers
+docker-compose build
+docker-compose up -d
 ```
 
-#### Backup
-
-It's important to regularly backup the Redis data:
+### Checking Logs
 
 ```bash
-# Create a backup directory
-mkdir -p backups
+# View all logs
+docker-compose logs
 
-# Backup Redis data
+# View logs for a specific service
+docker-compose logs frontend
+docker-compose logs backend
+docker-compose logs redis
+
+# Follow logs in real-time
+docker-compose logs -f
+```
+
+### Backup and Recovery
+
+Set up regular Redis backups:
+
+```bash
+# Create a backup script
+cat > backup-redis.sh << 'EOF'
+#!/bin/bash
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="/backups/redis"
+mkdir -p $BACKUP_DIR
 docker exec marden-docker-deployment_redis_1 redis-cli SAVE
-docker cp marden-docker-deployment_redis_1:/data/dump.rdb backups/redis-backup-$(date +%Y%m%d).rdb
+docker cp marden-docker-deployment_redis_1:/data/dump.rdb $BACKUP_DIR/redis-backup-$TIMESTAMP.rdb
+# Optional: remove backups older than 30 days
+find $BACKUP_DIR -name "redis-backup-*.rdb" -type f -mtime +30 -delete
+EOF
+
+# Make it executable
+chmod +x backup-redis.sh
+
+# Add to crontab
+crontab -e
+```
+
+Add this line to run daily backups:
+```
+0 2 * * * /path/to/backup-redis.sh
 ```
 
 ## Troubleshooting
 
-### Frontend Issues
+### Container Issues
 
-If the frontend isn't loading:
-- Check that the Nginx configuration is correct
-- Verify that the frontend container is running: `docker-compose ps`
-- Check the logs: `docker-compose logs frontend`
+If containers aren't starting:
 
-### Backend Issues
+```bash
+# Check container status
+docker-compose ps
 
-If the backend API isn't working:
-- Verify that the backend container is running: `docker-compose ps`
-- Check the logs: `docker-compose logs backend`
-- Ensure environment variables are set correctly in .env
+# View error logs
+docker-compose logs
+```
 
-### Redis Issues
+### SSL Issues
 
-If there are issues with Redis:
-- Check that the Redis container is running: `docker-compose ps`
-- Verify the logs: `docker-compose logs redis`
-- Ensure the backend can connect to Redis
+If SSL certificates aren't working:
 
-## Worker Deployment
+```bash
+# Check certificate existence
+ls -la /etc/letsencrypt/live/audit.mardenseo.com/
 
-For higher volume sites, you may want to separate the worker from the API:
+# Check certificate expiration
+sudo certbot certificates
 
-1. Create a separate Dockerfile for the worker in `backend/Dockerfile.worker`
-2. Add a worker service to docker-compose.yml
-3. Configure the worker to use the same Redis instance
+# Test SSL configuration
+openssl s_client -connect audit.mardenseo.com:443 -servername audit.mardenseo.com
+```
+
+### Network Issues
+
+If services can't communicate:
+
+```bash
+# Check Docker networks
+docker network ls
+docker network inspect marden-docker-deployment_default
+
+# Check port usage
+sudo netstat -tulpn | grep -E ':(80|443|3000|6379)'
+```
 
 ## Security Considerations
 
-1. Use a firewall to restrict access to your server
-2. Set up proper user management and avoid running containers as root
-3. Regularly update Docker and all images
-4. Use Docker secrets for sensitive environment variables
-5. Implement rate limiting for the API
+1. Keep Docker and all images updated
+2. Restrict SSH access using key-based authentication
+3. Configure a firewall (UFW) to only allow necessary ports
+4. Use secure passwords and environment variables
+5. Regularly back up your data
+
+## Additional Configuration
+
+### Setting Up a Firewall
+
+```bash
+# Install UFW
+sudo apt-get install -y ufw
+
+# Set default policies
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow SSH, HTTP, and HTTPS
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+
+# Enable the firewall
+sudo ufw enable
+```
+
+### Setting Up Monitoring (Optional)
+
+Consider installing tools like:
+- Prometheus and Grafana for metrics
+- Portainer for container management
+- Watchtower for automatic container updates

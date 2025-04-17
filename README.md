@@ -10,52 +10,103 @@ The MardenSEO Audit Tool Docker deployment includes:
 - Backend (Node.js API server)
 - Redis (replacing Upstash Redis for data storage and job queuing)
 
-## Repository Structure
+## Local Testing
 
-```
-marden-docker-deployment/
-├── docker-compose.yml        # Main Docker Compose file combining all services
-├── frontend/                 # Frontend Docker configuration
-│   ├── Dockerfile            # Frontend build and Nginx configuration
-│   ├── docker-compose.yml    # Standalone frontend Docker Compose
-│   └── nginx.conf            # Nginx server configuration
-├── backend/                  # Backend Docker configuration
-│   ├── Dockerfile            # Backend Node.js configuration
-│   └── docker-compose.yml    # Standalone backend Docker Compose
-├── DOCKER_DEPLOYMENT.md      # Detailed deployment guide
-└── README.md                 # This file
-```
-
-## Quick Start
+To test the application locally:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/marden-docker-deployment.git
+   git clone https://github.com/Kr8thor/marden-docker-deployment.git
    cd marden-docker-deployment
    ```
 
-2. Create a `.env` file with required environment variables:
+2. Run the local testing script:
    ```bash
-   touch .env
-   # Add required variables to .env file
+   chmod +x run-local.sh
+   ./run-local.sh
    ```
 
-3. Run the Docker Compose setup:
+3. Access the application at http://localhost
+
+4. To view logs:
    ```bash
+   docker-compose -f docker-compose.local.yml logs -f
+   ```
+
+5. To stop the local setup:
+   ```bash
+   docker-compose -f docker-compose.local.yml down
+   ```
+
+## Server Deployment
+
+To deploy on a production server:
+
+1. SSH into your server:
+   ```bash
+   ssh username@server-ip-address
+   ```
+
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/Kr8thor/marden-docker-deployment.git
+   cd marden-docker-deployment
+   ```
+
+3. Run the deployment script:
+   ```bash
+   chmod +x deploy.sh
+   sudo ./deploy.sh
+   ```
+
+   This script will:
+   - Install Docker and Docker Compose if needed
+   - Check for SSL certificates and obtain them if not present
+   - Build and start the Docker containers
+   - Set up automatic certificate renewal
+
+4. The application will be accessible at https://audit.mardenseo.com
+
+## Manual Deployment
+
+If you prefer to deploy manually:
+
+1. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with appropriate values
+   ```
+
+2. Check for SSL certificates:
+   ```bash
+   ls -la /etc/letsencrypt/live/audit.mardenseo.com/
+   ```
+
+3. If certificates don't exist, install Certbot and obtain them:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install certbot
+   sudo certbot certonly --standalone -d audit.mardenseo.com
+   ```
+
+4. Build and start the Docker containers:
+   ```bash
+   docker-compose build
    docker-compose up -d
    ```
 
-4. Access the application at http://localhost or your configured domain
+5. Set up automatic certificate renewal:
+   ```bash
+   sudo crontab -e
+   # Add this line:
+   0 3 * * * certbot renew --quiet && docker-compose -f /path/to/docker-compose.yml restart frontend
+   ```
 
-## Documentation
+## Troubleshooting
 
-For complete deployment instructions, please see [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md).
-
-## Requirements
-
-- Docker
-- Docker Compose
-- Git
+- **SSL Issues**: If you're having SSL certificate problems, check the paths in docker-compose.yml and ensure they match your actual certificate paths.
+- **Connection Issues**: Check if the ports 80 and 443 are open in your firewall.
+- **API Errors**: Verify the .env configuration, especially the ALLOWED_ORIGINS value.
 
 ## License
 
