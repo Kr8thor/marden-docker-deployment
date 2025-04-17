@@ -1,0 +1,3 @@
+[environments]
+  production.services.backend.envs = { NODE_ENV = "production" }
+  production.services.frontend.envs = { NODE_ENV = "production" }
