@@ -1,14 +1,11 @@
 {
   "version": 2,
-  "framework": "vite",
   "routes": [
     { "src": "/api/(.*)", "dest": "https://backend-4s5343ega-leo-corbetts-projects.vercel.app/api/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
   "env": {
-    "VITE_API_URL": "https://backend-4s5343ega-leo-corbetts-projects.vercel.app/api"
+    "VITE_API_URL": "/api"
   }
 }

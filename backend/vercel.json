@@ -4,10 +4,10 @@
     { "src": "api/**/*.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/hello", "dest": "/api/hello.js" },
     { "src": "/api/health", "dest": "/api/health.js" },
     { "src": "/api/audit", "dest": "/api/audit.js" },
-    { "src": "/", "dest": "/api/hello.js" }
+    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ],
   "env": {
     "NODE_ENV": "production",

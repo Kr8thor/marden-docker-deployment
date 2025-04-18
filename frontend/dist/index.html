@@ -49,6 +49,24 @@
             margin-top: 20px;
             background-color: #f9f9f9;
         }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -63,11 +81,15 @@
         <h2>Start a New Audit</h2>
         <input type="url" id="urlInput" placeholder="https://example.com" />
         <button id="startAudit">Start SEO Audit</button>
+        <div id="loading">
+            <div class="loader"></div>
+            <p>Processing request...</p>
+        </div>
         <div id="auditResult"></div>
     </div>
     
     <script>
-        // API endpoint will be set by environment variable in production
+        // API endpoint
         const API_URL = '/api';
         
         // Check API status
@@ -77,6 +99,9 @@
             
             try {
                 const response = await fetch(`${API_URL}/health`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 
                 statusDiv.innerHTML = `
@@ -86,6 +111,7 @@
                         <p>Timestamp: ${data.timestamp}</p>
                     </div>
                 `;
+                console.log('API health check successful:', data);
             } catch (error) {
                 statusDiv.innerHTML = `
                     <div class="card" style="background-color: #ffeeee;">
@@ -93,6 +119,7 @@
                         <p>Error: ${error.message}</p>
                     </div>
                 `;
+                console.error('API health check failed:', error);
             }
         });
         
@@ -100,6 +127,7 @@
         document.getElementById('startAudit').addEventListener('click', async () => {
             const url = document.getElementById('urlInput').value;
             const resultDiv = document.getElementById('auditResult');
+            const loadingDiv = document.getElementById('loading');
             
             if (!url) {
                 resultDiv.innerHTML = `
@@ -110,7 +138,8 @@
                 return;
             }
             
-            resultDiv.innerHTML = 'Starting audit...';
+            resultDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
             
             try {
                 const response = await fetch(`${API_URL}/audit`, {
@@ -121,8 +150,13 @@
                     body: JSON.stringify({ url }),
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
+                loadingDiv.style.display = 'none';
                 resultDiv.innerHTML = `
                     <div class="card">
                         <h3>Audit Started</h3>
@@ -132,15 +166,21 @@
                         <p>Created: ${data.job.createdAt}</p>
                     </div>
                 `;
+                console.log('Audit started:', data);
             } catch (error) {
+                loadingDiv.style.display = 'none';
                 resultDiv.innerHTML = `
                     <div class="card" style="background-color: #ffeeee;">
                         <h3>Failed to Start Audit</h3>
                         <p>Error: ${error.message}</p>
                     </div>
                 `;
+                console.error('Failed to start audit:', error);
             }
         });
+
+        // Log the API URL on load
+        console.log('API URL:', API_URL);
     </script>
 </body>
 </html>

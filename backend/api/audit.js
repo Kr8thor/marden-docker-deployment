@@ -10,9 +10,12 @@ module.exports = (req, res) => {
     return res.status(200).end();
   }
   
-  // Only allow POST requests
+  // Handle only POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({
+      status: 'error',
+      message: 'Method not allowed'
+    });
   }
   
   // Get URL from request body
@@ -33,6 +36,7 @@ module.exports = (req, res) => {
     createdAt: new Date().toISOString()
   };
   
+  // Return success
   res.status(200).json({
     status: 'success',
     job
