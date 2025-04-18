@@ -1,34 +1,43 @@
-// Root API endpoint for Vercel
-module.exports = (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  // Handle OPTIONS request for CORS preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  // Return API information
-  res.status(200).json({
-    status: 'ok',
-    message: 'Marden SEO Audit API',
-    version: '1.0.0',
-    endpoints: [
-      {
-        path: '/api/health',
-        method: 'GET',
-        description: 'Health check endpoint'
-      },
-      {
-        path: '/api/audit',
-        method: 'POST',
-        description: 'Start an SEO audit',
-        body: {
-          url: 'URL to audit (required)'
-        }
-      }
-    ]
-  });
-};
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+const { runWorker } = require('../src/worker');
+
+const port = process.env.PORT || 3000;
+
+// Route to /api
+app.get('/api', (req, res) => {
+  res.json({message:'Marden SEO Audit API'});
+});
+
+// Route to /api/health
+app.get('/api/health', (req, res) => {
+  res.json({status:'ok'});
+});
+
+// Route to /api/audit
+app.post('/api/audit', (req, res) => {
+  res.json({message: "Audit started"});
+});
+
+// Route to /api/audit/:jobId
+app.get('/api/audit/:jobId', (req, res) => {
+  res.json({message: `Job ${req.params.jobId} status`});
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+  runWorker();
+});
+
+
+
+module.exports = app;
+
+
+module.exports = app;
+
+
+

@@ -2,11 +2,19 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Create a simple file
-RUN echo 'console.log("Server running on port 3000"); require("http").createServer((req, res) => { res.writeHead(200, {"Content-Type": "application/json"}); res.end(JSON.stringify({status: "ok", message: "Backend is running"})); }).listen(3000);' > index.js
+# Copy package.json first to leverage Docker cache
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy the rest of the files
+COPY . .
+
+ENV NODE_ENV=production
 
 # Expose the API port
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "index.js"]
+ENTRYPOINT ["npm", "start"]
