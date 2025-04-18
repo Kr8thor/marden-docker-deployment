@@ -1,4 +1,4 @@
-// Audit API endpoint for Vercel
+// Audit endpoint
 module.exports = (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,14 +12,11 @@ module.exports = (req, res) => {
   
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({
-      status: 'error',
-      message: 'Method not allowed'
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Check for URL in request body
-  const { url } = req.body;
+  // Get URL from request body
+  const { url } = req.body || {};
   
   if (!url) {
     return res.status(400).json({
@@ -28,7 +25,7 @@ module.exports = (req, res) => {
     });
   }
   
-  // Create a mock job response
+  // Create a mock job
   const job = {
     id: Math.random().toString(36).substring(2, 15),
     url,
@@ -36,7 +33,6 @@ module.exports = (req, res) => {
     createdAt: new Date().toISOString()
   };
   
-  // Return success response
   res.status(200).json({
     status: 'success',
     job
