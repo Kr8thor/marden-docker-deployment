@@ -9,17 +9,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
-      - name: Install Railway
+      - name: Echo environment variables
+        run: |
+          echo "Checking railway token availability..."
+          if [ -n "${{ secrets.RAILWAY_TOKEN }}" ]; then 
+            echo "RAILWAY_TOKEN is set."
+          else
+            echo "RAILWAY_TOKEN is NOT set. Will need to be configured in GitHub repository secrets."
+          fi
+
+      - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy
-        run: railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy to Railway directly
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
