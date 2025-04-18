@@ -3,15 +3,15 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY ./frontend/package.json ./
-COPY ./frontend/package-lock.json ./
+# Copy package files - using relative paths without ./
+COPY package.json ./
+COPY package-lock.json ./
 
-# Install dependencies using npm install to update the lock file
+# Install dependencies
 RUN npm install
 
 # Copy the rest of the application
-COPY ./frontend/ ./
+COPY . ./
 
 # Build the application
 RUN npm run build
