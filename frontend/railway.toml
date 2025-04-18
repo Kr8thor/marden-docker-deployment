@@ -1,6 +1,0 @@
-
-
-[deploy]
-dockerfilePath = "Dockerfile"
-startCommand = "npx serve -s dist -l $PORT" 
-restartPolicyType = "ON_FAILURE" 
