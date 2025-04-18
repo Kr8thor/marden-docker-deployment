@@ -24,14 +24,20 @@ COPY backend/package-lock.json ./
 RUN npm ci
 COPY backend/ ./
 
-# Setup combined server
+# Return to app root
 WORKDIR /app
+
+# Setup server
 COPY package.json ./
-RUN npm install express http-proxy-middleware
+RUN npm install
 COPY server.js ./
 
 # Expose port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
 
 # Start the combined server
 CMD ["node", "server.js"]
