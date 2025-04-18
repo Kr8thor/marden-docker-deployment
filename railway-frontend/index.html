@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marden SEO Audit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Marden SEO Audit</h1>
+    <p>Welcome to the Marden SEO Audit tool. This is a simple frontend deployed on Railway.</p>
+    
+    <button id="testApi">Test API Connection</button>
+    
+    <div id="result">
+        <p>Results will appear here...</p>
+    </div>
+
+    <script>
+        document.getElementById('testApi').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing API connection...</p>';
+            
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>API Connection Successful!</h3>
+                    <p>Status: ${data.status}</p>
+                    <p>Timestamp: ${data.timestamp}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>API Connection Failed</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>Make sure the backend is running and properly connected.</p>
+                `;
+                
+                try {
+                    // Try to fetch directly from the backend URL as a fallback
+                    const backendUrl = 'https://railway-backend-production.up.railway.app/api/health';
+                    resultDiv.innerHTML += `<p>Trying direct backend URL: ${backendUrl}</p>`;
+                    
+                    const directResponse = await fetch(backendUrl);
+                    const directData = await directResponse.json();
+                    
+                    resultDiv.innerHTML += `
+                        <h3>Direct Backend Connection Successful!</h3>
+                        <p>Status: ${directData.status}</p>
+                        <p>Timestamp: ${directData.timestamp}</p>
+                        <pre>${JSON.stringify(directData, null, 2)}</pre>
+                    `;
+                } catch (directError) {
+                    resultDiv.innerHTML += `
+                        <p>Direct backend connection also failed: ${directError.message}</p>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
