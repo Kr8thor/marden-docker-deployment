@@ -2,10 +2,12 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "echo 'Building project with Railway'"
+    "watchPatterns": [
+      "backend/**",
+      "frontend/**"
+    ]
   },
   "deploy": {
-    "startCommand": "echo 'Starting project with Railway'",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

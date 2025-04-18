@@ -6,13 +6,20 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --only=production
 
 # Copy source code
 COPY . .
 
+# Create env file from .env.production if it exists
+RUN if [ -f .env.production ]; then cp .env.production .env; fi
+
 # Expose the API port
 EXPOSE 3000
+
+# Set environment variable for production
+ENV NODE_ENV=production
+ENV PORT=3000
 
 # Start the application
 CMD ["npm", "start"]
