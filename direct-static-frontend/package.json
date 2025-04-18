@@ -1,0 +1,12 @@
+{
+  "name": "direct-static-frontend",
+  "version": "1.0.0",
+  "description": "Static frontend for Railway deployment",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx serve -s ."
+  },
+  "dependencies": {
+    "serve": "^14.0.1"
+  }
+}
