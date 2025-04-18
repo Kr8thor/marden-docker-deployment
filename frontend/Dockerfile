@@ -21,11 +21,5 @@ RUN mkdir -p /etc/nginx/ssl
 #COPY ./ssl/cert.pem /etc/nginx/ssl/cert.pem
 #COPY ./ssl/key.pem /etc/nginx/ssl/key.pem
 
-
 # Expose port 80
 EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
