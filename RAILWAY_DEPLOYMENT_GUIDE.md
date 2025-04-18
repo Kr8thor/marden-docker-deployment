@@ -54,9 +54,7 @@ This guide outlines how to deploy the Marden SEO Audit application to Railway.
 
 ## Troubleshooting
 
-If you encounter issues with the deployment:
-
-1. **Redis Connection Issues**:
+If you encounter issues with the deployment, consider the following:
    - Check that the Redis URL is correctly linked from the Redis service
    - Verify that the backend service has access to the Redis service
 
@@ -64,7 +62,7 @@ If you encounter issues with the deployment:
    - Ensure the `VITE_API_URL` in the frontend points to the correct backend URL
    - Check for any CORS issues in the backend logs
 
-3. **Build Failures**:
+   - **Build Failures**:
    - Check the deployment logs for specific error messages
    - Verify that all dependencies are correctly listed in package.json
 
