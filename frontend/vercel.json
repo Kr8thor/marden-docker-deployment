@@ -1,11 +1,13 @@
 {
   "version": 2,
   "routes": [
-    { "src": "/api/(.*)", "dest": "https://marden-backend-7ppvt2pzy-leo-corbetts-projects.vercel.app/api/$1" },
+    { "src": "/api/(.*)", "dest": "https://backend-28cyuaec2-leo-corbetts-projects.vercel.app/api/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "env": {
-    "VITE_API_URL": "/api"
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://backend-28cyuaec2-leo-corbetts-projects.vercel.app/api"
+    }
   }
 }
