@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marden SEO Audit Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        button {
+            background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            max-width: 500px;
+            display: block;
+            margin: 20px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Marden SEO Audit Tool</h1>
+    
+    <div>
+        <button id="checkApi">Check API Status</button>
+        <div id="apiStatus"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Start a New Audit</h2>
+        <input type="url" id="urlInput" placeholder="https://example.com" />
+        <button id="startAudit">Start SEO Audit</button>
+        <div id="auditResult"></div>
+    </div>
+    
+    <script>
+        // API endpoint - replace with your actual API URL
+        const API_URL = 'https://marden-api-production.up.railway.app';
+        
+        // Check API status
+        document.getElementById('checkApi').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('apiStatus');
+            statusDiv.innerHTML = 'Checking API status...';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                statusDiv.innerHTML = `
+                    <div class="card">
+                        <h3>API Connection Successful!</h3>
+                        <p>Status: ${data.status}</p>
+                        <p>Timestamp: ${data.timestamp}</p>
+                    </div>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="card" style="background-color: #ffeeee;">
+                        <h3>API Connection Failed</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Start an audit
+        document.getElementById('startAudit').addEventListener('click', async () => {
+            const url = document.getElementById('urlInput').value;
+            const resultDiv = document.getElementById('auditResult');
+            
+            if (!url) {
+                resultDiv.innerHTML = `
+                    <div class="card" style="background-color: #ffeeee;">
+                        <p>Please enter a valid URL</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Starting audit...';
+            
+            try {
+                const response = await fetch(`${API_URL}/audit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url }),
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="card">
+                        <h3>Audit Started</h3>
+                        <p>Job ID: ${data.job.id}</p>
+                        <p>Status: ${data.job.status}</p>
+                        <p>URL: ${data.job.url}</p>
+                        <p>Created: ${data.job.createdAt}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="card" style="background-color: #ffeeee;">
+                        <h3>Failed to Start Audit</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
