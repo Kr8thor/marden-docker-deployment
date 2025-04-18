@@ -1,0 +1,23 @@
+# Base Dockerfile for testing
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY ./frontend/package.json ./
+COPY ./frontend/package-lock.json ./
+
+# Install dependencies using npm install to update the lock file
+RUN npm install
+
+# Copy the rest of the application
+COPY ./frontend/ ./
+
+# Build the application
+RUN npm run build
+
+# Expose port
+EXPOSE 80
+
+# Start the application
+CMD ["npm", "start"]
